@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import Form from "./components/Form";
 import FilterButton from "./components/FilterButton";
 import Todo from "./components/Todo";
-import { nanoid } from "nanoid";
+
+const API_URL = "https://ai2ntxz027.execute-api.ap-southeast-2.amazonaws.com/todos";
 
 function usePrevious(value) {
   const ref = useRef(null);
@@ -20,43 +21,66 @@ const FILTER_MAP = {
 
 const FILTER_NAMES = Object.keys(FILTER_MAP);
 
-function App(props) {
-  const [tasks, setTasks] = useState(props.tasks);
+function App() {
+  const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState("All");
 
-  function toggleTaskCompleted(id) {
-    const updatedTasks = tasks.map((task) => {
-      // if this task has the same ID as the edited task
-      if (id === task.id) {
-        // use object spread to make a new obkect
-        // whose `completed` prop has been inverted
-        return { ...task, completed: !task.completed };
-      }
-      return task;
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) => setTasks(data))
+      .catch((err) => console.error("Error loading tasks:", err));
+  }, []);
+
+  async function addTask(name) {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
     });
-    setTasks(updatedTasks);
+
+    const newTask = await res.json();
+    setTasks([...tasks, newTask]);
   }
 
-  function deleteTask(id) {
-    const remainingTasks = tasks.filter((task) => id !== task.id);
-    setTasks(remainingTasks);
+  async function toggleTaskCompleted(id) {
+    const task = tasks.find((task) => task.id === id);
+    const updatedTask = { ...task, completed: !task.completed };
+
+    await fetch(API_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedTask),
+    });
+
+    setTasks(tasks.map((task) => (task.id === id ? updatedTask : task)));
   }
 
-  function editTask(id, newName) {
-    const editedTaskList = tasks.map((task) => {
-      // if this task has the same ID as the edited task
-      if (id === task.id) {
-        // Copy the task and update its name
-        return { ...task, name: newName };
-      }
-      // Return the original task if it's not the edited task
-      return task;
+  async function deleteTask(id) {
+    await fetch(API_URL, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
     });
-    setTasks(editedTaskList);
+
+    setTasks(tasks.filter((task) => task.id !== id));
+  }
+
+  async function editTask(id, newName) {
+    const task = tasks.find((task) => task.id === id);
+    const updatedTask = { ...task, name: newName };
+
+    await fetch(API_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedTask),
+    });
+
+    setTasks(tasks.map((task) => (task.id === id ? updatedTask : task)));
   }
 
   const taskList = tasks
-    ?.filter(FILTER_MAP[filter])
+    .filter(FILTER_MAP[filter])
     .map((task) => (
       <Todo
         id={task.id}
@@ -77,11 +101,6 @@ function App(props) {
       setFilter={setFilter}
     />
   ));
-
-  function addTask(name) {
-    const newTask = { id: "todo-" + nanoid(), name: name, completed: false };
-    setTasks([...tasks, newTask]);
-  }
 
   const tasksNoun = taskList.length !== 1 ? "tasks" : "task";
   const headingText = `${taskList.length} ${tasksNoun} remaining`;
