@@ -3,13 +3,14 @@ import Form from "./components/Form";
 import FilterButton from "./components/FilterButton";
 import Todo from "./components/Todo";
 
-const API_URL = "http://localhost:5000/todos";
+const API_URL = "http://3.27.95.136:5000/todos";
 
 function usePrevious(value) {
   const ref = useRef(null);
   useEffect(() => {
     ref.current = value;
   });
+  
   return ref.current;
 }
 
