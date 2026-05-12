@@ -3,7 +3,7 @@ import Form from "./components/Form";
 import FilterButton from "./components/FilterButton";
 import Todo from "./components/Todo";
 
-const API_URL = "https://ai2ntxz027.execute-api.ap-southeast-2.amazonaws.com/todos";
+const API_URL = "http://localhost:5000/todos";
 
 function usePrevious(value) {
   const ref = useRef(null);
