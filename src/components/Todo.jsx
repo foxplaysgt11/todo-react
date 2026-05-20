@@ -21,15 +21,24 @@ function Todo(props) {
     setNewName(event.target.value);
   }
 
-  // NOTE: As written, this function has a bug: it doesn't prevent the user
-  // from submitting an empty form. This is left as an exercise for developers
-  // working through MDN's React tutorial.
   function handleSubmit(event) {
     event.preventDefault();
+
+    if (!newName.trim()) {
+      return;
+    }
+
     props.editTask(props.id, newName);
     setNewName("");
     setEditing(false);
   }
+
+  const priorityClass =
+    props.priority === "High"
+      ? "ai-priority-high"
+      : props.priority === "Medium"
+      ? "ai-priority-medium"
+      : "ai-priority-low";
 
   const editingTemplate = (
     <form className="stack-small" onSubmit={handleSubmit}>
@@ -46,14 +55,17 @@ function Todo(props) {
           ref={editFieldRef}
         />
       </div>
+
       <div className="btn-group">
         <button
           type="button"
           className="btn todo-cancel"
-          onClick={() => setEditing(false)}>
+          onClick={() => setEditing(false)}
+        >
           Cancel
           <span className="visually-hidden">renaming {props.name}</span>
         </button>
+
         <button type="submit" className="btn btn__primary todo-edit">
           Save
           <span className="visually-hidden">new name for {props.name}</span>
@@ -71,24 +83,46 @@ function Todo(props) {
           defaultChecked={props.completed}
           onChange={() => props.toggleTaskCompleted(props.id)}
         />
+
         <label className="todo-label" htmlFor={props.id}>
           {props.name}
         </label>
       </div>
+
+      <div className="ai-info-box">
+        <p>
+          <strong>Category:</strong> {props.category || "General"}
+        </p>
+
+        <p>
+          <strong>Priority:</strong>{" "}
+          <span className={priorityClass}>{props.priority || "Low"}</span>
+        </p>
+
+        <p>
+          <strong>AI Reason:</strong>{" "}
+          {props.ai_reason || "No AI analysis available."}
+        </p>
+      </div>
+
       <div className="btn-group">
         <button
           type="button"
           className="btn"
           onClick={() => {
             setEditing(true);
+            setNewName(props.name);
           }}
-          ref={editButtonRef}>
+          ref={editButtonRef}
+        >
           Edit <span className="visually-hidden">{props.name}</span>
         </button>
+
         <button
           type="button"
           className="btn btn__danger"
-          onClick={() => props.deleteTask(props.id)}>
+          onClick={() => props.deleteTask(props.id)}
+        >
           Delete <span className="visually-hidden">{props.name}</span>
         </button>
       </div>

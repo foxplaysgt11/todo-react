@@ -10,7 +10,7 @@ function usePrevious(value) {
   useEffect(() => {
     ref.current = value;
   });
-  
+
   return ref.current;
 }
 
@@ -87,6 +87,9 @@ function App() {
         id={task.id}
         name={task.name}
         completed={task.completed}
+        category={task.category}
+        priority={task.priority}
+        ai_reason={task.ai_reason}
         key={task.id}
         toggleTaskCompleted={toggleTaskCompleted}
         deleteTask={deleteTask}
